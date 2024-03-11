@@ -40,9 +40,9 @@ st.sidebar.divider()
 def oldest_and_recent_wins():
     st.sidebar.subheader("Show Recents")
     show_recent_wins = st.sidebar.checkbox(
-        "Recent Winning numbers", value=False)
+        "Recent Winning numbers", value=True)
     show_oldest_wins = st.sidebar.checkbox(
-        "Oldest Winning numbers", value=False)
+        "Oldest Winning numbers", value=True)
     # create conditions
     if show_recent_wins:
         # UI elemeents
