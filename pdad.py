@@ -48,12 +48,14 @@ def oldest_and_recent_wins():
         # UI elemeents
         st.subheader("Most recent winning numbers")
         # get first row
-        st.write(df.head(1).drop(['Jackpot', 'Power Play'], axis=1))
+        st.dataframe(df.head(1).drop(
+            ['Jackpot', 'Power Play'], axis=1), hide_index=True)
     if show_oldest_wins:
         # UI elemeents
         st.subheader("Oldest winning numbers")
         # get first row
-        st.write(df.tail(1).drop(['Jackpot', 'Power Play'], axis=1))
+        st.dataframe(df.tail(1).drop(
+            ['Jackpot', 'Power Play'], axis=1), hide_index=True)
 
 
 oldest_and_recent_wins()
@@ -188,7 +190,7 @@ def search_by_percentage():
     if show_percentage_data:
         # write precenage table-text and table to ui
         st.subheader(f'Win percentage {table_text}:  {number}')
-        st.write(number_search_callback()['percentage data'])
+        st.dataframe(number_search_callback()['percentage data'], width=900)
 
 
 search_by_percentage()
@@ -337,7 +339,8 @@ def all_occurences():
         st.bar_chart(
             st.session_state.occurence_df,
             use_container_width=False,
-            x='Number')
+            x='Number',
+            width=900)
 
 
 all_occurences()
