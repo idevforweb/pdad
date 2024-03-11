@@ -246,11 +246,11 @@ def summary_data():
     if show_slot_data:
         # write summary tables to ui
         st.subheader(f'Number summary: {number}')
-        st.write(summary_callback()['summary data 1'])
-        st.write(summary_callback()['summary data 2'])
-        st.write(summary_callback()['summary data 3'])
-        st.write(summary_callback()['summary data 4'])
-        st.write(summary_callback()['summary data 5'])
+        st.dataframe(summary_callback()['summary data 1'], width=900)
+        st.dataframe(summary_callback()['summary data 2'], width=900)
+        st.dataframe(summary_callback()['summary data 3'], width=900)
+        st.dataframe(summary_callback()['summary data 4'], width=900)
+        st.dataframe(summary_callback()['summary data 5'], width=900)
 
 
 summary_data()
