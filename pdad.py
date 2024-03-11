@@ -190,7 +190,10 @@ def search_by_percentage():
     if show_percentage_data:
         # write precenage table-text and table to ui
         st.subheader(f'Win percentage {table_text}:  {number}')
-        st.dataframe(number_search_callback()['percentage data'], width=900)
+        st.dataframe(
+            number_search_callback()['percentage data'],
+            width=900
+        )
 
 
 search_by_percentage()
