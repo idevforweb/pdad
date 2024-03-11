@@ -95,12 +95,30 @@ def search_by_percentage():
                 return len([num for num in array if num >= number])
             elif option == 'Less than / Equal to':
                 return len([num for num in array if num <= number])
+
+        def get_all_numbers(col):
+            # turn strings data in dataframe columns into array of integers
+            array = [int(num) for num in df[col].values]
+            # conditionals: Create list from number selected, then get length of list
+            if option == 'Greater than / Equal to':
+                return [num for num in array if num >= number]
+            elif option == 'Less than / Equal to':
+                return len([num for num in array if num <= number])
+
         # store array lengths as totals in variables for percentage data columns
         n1 = get_number_total('Number 1')
         n2 = get_number_total('Number 2')
         n3 = get_number_total('Number 3')
         n4 = get_number_total('Number 4')
         n5 = get_number_total('Number 5')
+
+        # store array list as totals in variables for percentage data columns
+        n1_list = get_all_numbers('Number 1')
+        n2_list = get_all_numbers('Number 2')
+        n3_list = get_all_numbers('Number 3')
+        n4_list = get_all_numbers('Number 4')
+        n5_list = get_all_numbers('Number 5')
+
         # add all variables for total wins column
         add_wins = n1 + n2 + n3 + n4 + n5
         # get percentage
@@ -115,10 +133,18 @@ def search_by_percentage():
             "Total Wins": [f'{add_wins}  out of  {len(df) * 5} '],
             "Percentage": [get_percentage]
         }
+        data_list = {
+            "Number 1": [n1_list],
+            "Number 2": [n2_list],
+            "Number 3": [n3_list],
+            "Number 4": [n4_list],
+            "Number 5": [n5_list]
+        }
 
         # return data as a dataframe and rename index, and add summary data to object
         return {
             'percentage data': pd.DataFrame(data, index=[f"Number {number}  "]),
+            'list data': pd.DataFrame(),
         }
 
     # conditions to change table-text for percentage table
@@ -132,11 +158,10 @@ def search_by_percentage():
     #
     # Ui Elements
     #
-
     st.sidebar.write("")
     st.sidebar.write("")
     st.sidebar.subheader("Search Win percentage")
-    # show / hide percentage data checkbox
+    # show / hide percentage data table checkbox
     show_percentage_data = st.sidebar.checkbox(
         "Show Percentage data", value=True)
     # select box
@@ -236,52 +261,86 @@ summary_data()
 #
 
 
-def numbers_list():
-    from collections import Counter, OrderedDict
-    number = '1'
-    # function to remove unwanted columns,
-    # create single dataframe and set input number
+def all_occurences():
+    # Create function scope Session States
+    if "occurence_number" not in st.session_state:
+        st.session_state.occurence_number = 1
+    if "occurence_df" not in st.session_state:
+        st.session_state.occurence_df = 'Niow'
 
-    def data(number_col_arg):
-        return df.drop(['Month', 'Day', 'Year', 'Power Ball',
-                        'Power Play', 'Jackpot'], axis=1).loc[df[number_col_arg] == number]
-    cols = ['Number 1', 'Number 2', 'Number 3', 'Number 4', 'Number 5']
-    # create all Dataframes using data() function
-    # and get all values ( numbers ), in nested list
-    # use sum to flatten list in new nested list, using empty []
-    # use numpy to flatten into single list of numbers
-    # Change all strings numbers to interger nubmers using int()
-    list_of_numbers = [int(number) for number in
-                       list(np.concatenate(
-                           sum([data(number_col).values.tolist() for number_col in cols], [])))]
-    # count all instances of input number
-    input_number_count = list_of_numbers.count(int(number))
-    # list numbers without input number
-    list_minus_input = [
-        numbers for numbers in list_of_numbers if numbers != int(number)
-    ]
-    # count_all_numbers
-    total_numbers = len(set(list_minus_input))
+    def numbers_list():
+        from collections import Counter
+        number = st.session_state.occurence_number
+        cols = ['Number 1', 'Number 2', 'Number 3', 'Number 4', 'Number 5']
+        # function to remove unwanted columns,
+        # create single dataframe and set input number
 
-    # count the numbers from list and create and ordered key:value list
-    list_counter = sorted(
-        Counter(list_minus_input).items(), key=lambda x: x[1]
+        def data(cols_list):
+            return df[df[cols_list] == str(number)].drop(['Jackpot', 'Power Play', 'Month', 'Day', 'Year', 'Power Ball'], axis=1)
+        # create all Dataframes using data() function
+        # and get all values ( numbers ), in nested list
+        # use sum to flatten list in new nested list, using empty []
+        # use numpy to flatten into single list of numbers
+        # Change all strings numbers to interger numbers using int()
+        list_of_numbers = [int(number) for number in
+                           list(np.concatenate(
+                               sum([data(number_col).values.tolist() for number_col in cols], [])))]
+        # count all instances of input number
+        input_number_count = list_of_numbers.count(int(number))
+        # list numbers removing all input number instances
+        list_minus_input = [
+            numbers for numbers in list_of_numbers if numbers != int(number)
+        ]
+        list_with_input = [numbers for numbers in list_of_numbers]
+        # count_all_numbers
+        total_numbers = len(set(list_minus_input))
+        # count the numbers from list and create and ordered key:value list
+        list_counter = sorted(
+            Counter(list_minus_input).items(), key=lambda x: x[1]
+        )
+        list_counter_with_number = sorted(
+            Counter(list_with_input).items(), key=lambda x: x[1]
+        )
+        # get all lotto numbers from list counter
+        powerball_numbers = [lotto_number[0]
+                             for lotto_number in list_counter]
+        # get all occurences from list counter
+        powerball_number_occurences = [occurences[1]
+                                       for occurences in list_counter]
+        # # Create Datafrane from numbers and occurences
+        numbers_and_occurences = pd.DataFrame({
+            "Number": powerball_numbers,
+            'Occurences': powerball_number_occurences,
+        })
+        # Ui Elements
+        return numbers_and_occurences
+    numbers_list()
+    # st.sidebar.write("")
+    st.sidebar.subheader("Search number occurences")
+    # show / hide summary data checkbox
+    show_occurences = st.sidebar.checkbox(
+        "Show occurences data", value=True)
+    # number input
+    number_search = st.sidebar.number_input(
+        label='Search by number',
+        min_value=1,
+        max_value=69,
+        label_visibility='collapsed',
+        key='occurence_number',
+        on_change=numbers_list,
+        placeholder='Search Number'
     )
-    # get all lotto numbers from list counter
-    lotto_numbers = [lotto_number[0] for lotto_number in list_counter]
-    # get all occurences from list counter
-    lotto_numbers_occurences = [occurences[1] for occurences in list_counter]
-    # Create Datafrane from numbers and occurences
-    numbers_and_occurences = pd.DataFrame({
-        f"Winning Numbers with {number}": lotto_numbers,
-        'Occurences': lotto_numbers_occurences,
-    })
-    # remove index
-    numbers_and_occurences
-    return
+    if show_occurences:
+        st.subheader("Number Occurences")
+        st.session_state.occurence_df = numbers_list()
+        st.session_state.occurence_df
+        st.bar_chart(
+            st.session_state.occurence_df,
+            use_container_width=False,
+            x='Number')
 
 
-# numbers_list()
+all_occurences()
 
 
 #
@@ -354,6 +413,8 @@ def advanced_search():
         st.session_state.switcher = 'number'
         st.session_state.input_date = ''
         st.session_state.data_desc = 'Showing all numbers data.'
+        if numbers[0] == 'all' or numbers[0] == 'All':
+            st.session_state.switcher = 0
         if numbers[0][0:1] == 'n' and len(numbers[0]) == 2:
             letters = numbers[0]
             numbers = numbers[1]
@@ -367,27 +428,31 @@ def advanced_search():
                 case 'n6': columns = "Power Ball"
                 case 'n7': columns = "Power Play"
                 case default: pass
-            st.session_state.data_desc = f'Showing all data for {numbers[0]} in {columns} slot.'
+            st.session_state.data_desc = f'Showing all data for {numbers} in {columns} slot.'
             return df.loc[df[columns] == numbers]
         elif len(numbers) == 1:
             st.session_state.data_desc = f'Showing number {numbers[0]} as Number 1'
             return df.loc[df["Number 1"] == numbers[0]]
         elif len(numbers) == 2:
+            st.session_state.data_desc = f"Showing data for numbers {','.join(numbers)}."
             return df.loc[
                 (df["Number 1"] == numbers[0]) &
                 (df["Number 2"] == numbers[1])]
         elif len(numbers) == 3:
+            st.session_state.data_desc = f"Showing data for numbers {','.join(numbers)}."
             return df.loc[
                 (df["Number 1"] == numbers[0]) &
                 (df["Number 2"] == numbers[1]) &
                 (df["Number 3"] == numbers[2])]
         elif len(numbers) == 4:
+            st.session_state.data_desc = f"Showing data for numbers {','.join(numbers)}."
             return df.loc[
                 (df["Number 1"] == numbers[0]) &
                 (df["Number 2"] == numbers[1]) &
                 (df["Number 3"] == numbers[2]) &
                 (df["Number 4"] == numbers[3])]
         elif len(numbers) == 5:
+            st.session_state.data_desc = f"Showing data for numbers {','.join(numbers)}."
             return df.loc[
                 (df["Number 1"] == numbers[0]) &
                 (df["Number 2"] == numbers[1]) &
@@ -395,6 +460,7 @@ def advanced_search():
                 (df["Number 4"] == numbers[3]) &
                 (df["Number 5"] == numbers[4])]
         elif len(numbers) == 6:
+            st.session_state.data_desc = f"Showing data for numbers {','.join(numbers)}."
             return df.loc[
                 (df["Number 1"] == numbers[0]) &
                 (df["Number 2"] == numbers[1]) &
@@ -402,15 +468,15 @@ def advanced_search():
                 (df["Number 4"] == numbers[3]) &
                 (df["Number 5"] == numbers[4]) &
                 (df["Power Ball"] == numbers[5])]
-        # elif len(numbers) == 7:
-        #     return df.loc[
-        #         (df["Number 1"] == numbers[0]) &
-        #         (df["Number 2"] == numbers[1]) &
-        #         (df["Number 3"] == numbers[2]) &
-        #         (df["Number 4"] == numbers[3]) &
-        #         (df["Number 5"] == numbers[4]) &
-        #         (df["Power Ball"] == numbers[5]) &
-        #         (df["Power Play"] == numbers[6])]
+        elif len(numbers) == 7:
+            return df.loc[
+                (df["Number 1"] == numbers[0]) &
+                (df["Number 2"] == numbers[1]) &
+                (df["Number 3"] == numbers[2]) &
+                (df["Number 4"] == numbers[3]) &
+                (df["Number 5"] == numbers[4]) &
+                (df["Power Ball"] == numbers[5]) &
+                (df["Power Play"] == numbers[6])]
 
     # UI Elements ##########
 
@@ -431,13 +497,13 @@ def advanced_search():
             st.session_state.data_desc = 'Showing all Numbers Data.'
             st.write(st.session_state.data_desc)
             st.session_state.df = df.drop(
-                ['Jackpot', 'Power Play'], axis=1
+                ['Jackpot'], axis=1
             )
             st.session_state.df
         if show_numbers_summary:
             st.subheader("Data Summary")
             st.session_state.desc = df.describe().drop(
-                ['Jackpot', 'Power Play'], axis=1).astype('str')
+                ['Jackpot'], axis=1).astype('str')
             st.session_state.desc
     # Switch data to date numbers data
     if st.session_state.switcher == 'date':
@@ -445,7 +511,7 @@ def advanced_search():
             st.subheader("Numbers Data")
             st.write(st.session_state.data_desc)
             st.session_state.df = search_by_date().drop(
-                ['Jackpot', 'Power Play'], axis=1
+                ['Jackpot'], axis=1
             )
             st.session_state.df["Month"].astype('str')
             st.session_state.df
@@ -453,7 +519,7 @@ def advanced_search():
             st.subheader("Data Summary")
             st.session_state.desc = st.dataframe(
                 search_by_date().describe().drop(
-                    ['Jackpot', 'Power Play'], axis=1).astype('str')
+                    ['Jackpot'], axis=1).astype('str')
             )
     # Switch data to input numbers data
     if st.session_state.switcher == 'number':
@@ -461,7 +527,7 @@ def advanced_search():
             st.subheader("Numbers Data")
             st.write(st.session_state.data_desc)
             st.session_state.df = search_by_number().drop(
-                ['Jackpot', 'Power Play'], axis=1
+                ['Jackpot'], axis=1
             )
             st.session_state.df["Month"].astype('str')
             st.session_state.df
@@ -469,7 +535,7 @@ def advanced_search():
             st.subheader("Data Summary")
             st.session_state.desc = st.dataframe(
                 search_by_number().describe().drop(
-                    ['Jackpot', 'Power Play'], axis=1).astype('str')
+                    ['Jackpot'], axis=1).astype('str')
             )
     # DATE INPUT
     date_search = st.sidebar.text_input(
