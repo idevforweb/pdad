@@ -505,7 +505,7 @@ def advanced_search():
             st.session_state.df = df.drop(
                 ['Jackpot'], axis=1
             )
-            st.dataframe(st.session_state.d, width=900)
+            st.dataframe(st.session_state.df, width=900)
         if show_numbers_summary:
             st.subheader("Data Summary")
             st.session_state.desc = df.describe().drop(
