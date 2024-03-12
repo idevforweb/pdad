@@ -528,6 +528,7 @@ def advanced_search():
                 search_by_date().describe().drop(
                     ['Jackpot'], axis=1).astype('str')
             )
+            st.session_state.desc
             # st.dataframe(st.session_state.desc, width=900)
     # Switch data to input numbers data
     if st.session_state.switcher == 'number':
@@ -545,6 +546,7 @@ def advanced_search():
                 search_by_number().describe().drop(
                     ['Jackpot'], axis=1).astype('str')
             )
+            st.session_state.desc
             # st.dataframe(st.session_state.desc, width=900)
     # DATE INPUT
     date_search = st.sidebar.text_input(
